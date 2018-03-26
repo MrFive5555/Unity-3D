@@ -67,7 +67,7 @@ public class NewBehaviourScript : MonoBehaviour {
 >  - Mesh Renderer
 
    -   用 UML 图描述 三者的关系（请使用 UMLet 14.1.1 stand-alone版本出图）
-![UML](https://github.com/MrFive5555/Unity-3D/blob/master/%E4%BD%9C%E4%B8%9A1-UML.png?raw=true)
+![UML](https://github.com/MrFive5555/Unity-3D/blob/master/%E4%BD%9C%E4%B8%9A1-UML-v2.0.png?raw=true)
 ---
 
 -   整理相关学习资料，编写简单代码验证以下技术的实现：
