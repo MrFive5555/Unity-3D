@@ -95,9 +95,14 @@ Transfer.find("name")
  ```
 遍历对象树
  ```C#
-foreach(Transform child in transform) {  
-     //do something here  
-}  
+private void travel(Transform root) {
+     foreach (Transform child in root.transform) {
+         Debug.Log(child.name);
+         travel(child);
+     }
+ }
+ //调用
+travel(this.transform);
    ```
 清除所有子对象
  ```C#
