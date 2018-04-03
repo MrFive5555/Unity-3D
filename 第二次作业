@@ -1,0 +1,96 @@
+# 1、简答并用程序验证
+-   游戏对象运动的本质是什么？
+> 本质是对象transform内属性position的改变
+-   请用三种方法以上方法，实现物体的抛物线运动。（如，修改Transform属性，使用向量Vector3的方法…）
+> 1. 
+> ```C#
+> this.transform.Translate(new Vector3(1, transform.position.x * 2, 0) * Time.deltaTime);
+> ```
+> 2.
+> ```C#
+> transform.position += new Vector3(1, transform.position.x * 2, 0) * Time.deltaTime;
+> ```
+> 3.
+> ```C#
+> Vector3 pos = this.transform.position;
+> transform.SetPositionAndRotation(new Vector3(
+>     pos.x + Time.deltaTime,
+>     (pos.x + Time.deltaTime)* (pos.x + Time.deltaTime), 
+>     0
+>  ), Quaternion.identity);
+> ```
+-   写一个程序，实现一个完整的太阳系， 其他星球围绕太阳的转速必须不一样，且不在一个法平面上。
+> ```c#
+> public class plantMoving : MonoBehaviour {
+>     public GameObject sun;
+>     public Vector3 axis;
+>     public float period;
+>     
+>     // Update is called once per frame
+>      void Update () {
+>              transform.RotateAround(
+>                  sun.transform.position, 
+>                  axis, 
+>                  360 / period * Time.deltaTime);
+>      }
+>  }
+> ```
+> 每个行星都是相同的代码，行星转速的不同可以使用period来控制，法平面可以通过axis来控制，最后我们需要在图形面板把我们设置的太阳拖动到sun属性里面，以确定公转的中心
+
+# 2.编程题
+
+## 题目
+-   play the game ( http://www.flash-game.net/game/2535/priests-and-devils.html )
+-   列出游戏中提及的事物（Objects）
+> - 牧师
+> - 魔鬼
+> - 船
+-   用表格列出玩家动作表（规则表），注意，动作越少越好
+> - 某一方的乘客（牧师或魔鬼）上船
+> - 开船
+-   请将游戏中对象做成预制
+-   在 GenGameObjects 中创建 长方形、正方形、球 及其色彩代表游戏中的对象。
+-   使用 C# 集合类型 有效组织对象
+-   整个游戏仅 主摄像机 和 一个 Empty 对象，  **其他对象必须代码动态生成！！！**  。 整个游戏不许出现 Find 游戏对象， SendMessage 这类突破程序结构的 通讯耦合 语句。  **违背本条准则，不给分**
+-   请使用课件架构图编程，**不接受非 MVC 结构程序**
+-   注意细节，例如：船未靠岸，牧师与魔鬼上下船运动中，均不能接受用户事件！
+
+## 设计
+游戏采用MVC模式设计
+> ## controllor : 
+> 负责整个游戏的调度，新对象的创建，位置更改，胜利条件判断
+> ## View
+> 负责计算各对象（船，乘客）的位置，并调用各对象的setPosition函数控制对象的位置
+> ## Model
+> 各对象的累，实例化之后各对象会储存自己的位置
+### 上船
+```mermaid
+sequenceDiagram
+participant Boat
+participant Controllor
+participant View
+Controllor->>Boat : getPosition()
+Boat->>Controllor : PassengerPosition
+Controllor->>View : aboard(PassengerPosition)
+View->>Controllor : lock
+loop drawing
+Controllor-->View : waitor for drawing finish
+end
+View->>Controllor : unlock
+```
+
+### 过河
+```mermaid
+sequenceDiagram
+participant Boat
+participant Controllor
+participant View
+Controllor->>Boat : cross()
+Boat->>Controllor : position
+Controllor->>View : aboard(position)
+View->>Controllor : lock
+loop drawing
+Controllor-->View : waitor for drawing finish
+end
+View->>Controllor : unlock
+```
