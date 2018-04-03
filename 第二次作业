@@ -55,6 +55,8 @@
 -   请使用课件架构图编程，**不接受非 MVC 结构程序**
 -   注意细节，例如：船未靠岸，牧师与魔鬼上下船运动中，均不能接受用户事件！
 
+# 项目GitHub地址
+[项目地址](https://github.com/MrFive5555/PriestsAndDevil.git)
 ## 设计
 游戏采用MVC模式设计
 > ## controllor : 
