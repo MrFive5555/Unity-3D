@@ -1,3 +1,8 @@
+# 游戏场景构建
+在Camera中添加Component->Skybox，再将相应的Skybox图案添加上去,如图
+![](http://imglf5.nosdn.127.net/img/SFdCQXBERFlWT1NacDMyVmYyYWg4QUMzU05UTjFFQjhpdEVnUGhqUVhmT1l1LzMvN2pXSHpnPT0.jpg?imageView&thumbnail=500x0&quality=96&stripmeta=0&type=jpg)
+
+![](http://imglf4.nosdn.127.net/img/SFdCQXBERFlWT1NacDMyVmYyYWg4TnMwLzlGVkNpSUt6aEdYRXhFdnVPMjJMdlRtbWFwOTNRPT0.jpg?imageView&thumbnail=500x0&quality=96&stripmeta=0&type=jpg)
 # 游戏对象使用的总结
  - 对可能会多次反复出现的对象（如各种角色和道具），可以做成预制，保存在Asset/Resource文件夹下，在需要时随时创建
  - 对象的各种属性（物理性质，材质等）可以通过添加对象的Componet实现
