@@ -5,7 +5,7 @@
 
 另外，程序使用动作分离的设计，从游戏中我们抽象出了ThrowUFO（发射飞碟），CountBack（开始前倒数），NewRound（开始新的一轮）等动作，抽象出逻辑，进行更好的控制
 下面是设计的UML图：
-?[]()
+?[](http://imglf6.nosdn.127.net/img/SFdCQXBERFlWT1JPSVp3Q1FzUHFjOTgzZ0VjUitwY3F6VmQrVnZvbGEvZjlQQUFlb0dianh3PT0.png?imageView&thumbnail=1680x0&quality=96&stripmeta=0)
 
 [GitHub](https://github.com/MrFive5555/unity3D-UFO-hit.git)
 [演示视频](http://v.youku.com/v_show/id_XMzU0NTc4MTIxNg==.html?spm=a2hzp.8244740.0.0)
