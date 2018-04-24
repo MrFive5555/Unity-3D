@@ -1,0 +1,258 @@
+# 使用物理力与运动学变换实现动作
+物理力与运动学变换是Unity中实现物体运动的两种常见方式。物理力使用的是物理系统（RigidBody），运动学采用的则是对transform的变换。
+我们以游戏中的一个Action为例展示两种方式的不同。在示例中，我们隐藏了部分相同的或无关的代码
+
+## 使用物理力的实现
+```C#
+class ThrowUFO : Action {
+    public UFO ufo;
+    private static int maxDistance = 100;
+    private float speed;
+    private Factory_UFO factory;
+    public static Action getAction(int score, float _speed) {
+	   /* some code */
+    }
+    override
+    public void Start() {
+        /* some code */
+        ufo.gameobject.GetComponent<Rigidbody>().velocity = new Vector3(
+            x_vel,
+            Random.Range(-0.3f, 0.3f),
+            1
+        ) * speed;
+        /* 设置Rigidbody的velocity属性， 为飞碟的初速度 */
+        /* some code */
+    }
+    override
+    public void Update () {
+	    /* 在Update里面几乎不用对对象进行任何操作，Rigidbody里面的内部机制已经帮助我们完成了这部分工作 */
+        /* some code */
+    }
+}
+```
+
+## 使用运动学变换
+```C#
+class ThrowUFO : Action {
+    public UFO ufo;
+    private static int maxDistance = 100;
+    private float speed;
+    private Factory_UFO factory;
+	
+	/* 这部分是运动学的必要因素
+	* velocity记录的是物体某一时刻的瞬时速度 
+	* deltaVel是每个时间间隔里，物体受到重力作用速度的改变值
+	*/
+    private Vector3 velocity;
+    private Vector3 deltaVel = Vector3.up * (-9.8f) * Time.fixedDeltaTime;
+
+    public static Action getAction(int score, float _speed) {
+        /* some code */
+    }
+    override
+    public void Start() {
+        /* some code */
+        /* 动作开始的时候需要初始化速度，作为初速度 */
+        velocity = new Vector3(
+            x_vel,
+            Random.Range(-0.3f, 0.3f),
+            1
+        ) * speed;
+        /* some code */
+    }
+    override
+    public void Update() { 
+	    /* 每段时间间隔里，速度的变化 */
+        velocity = velocity + deltaVel;
+        /* 新位置 = 旧位置 + 速度 * 时间 */
+        gameobject.transform.position = gameobject.transform.position + velocity * Time.fixedDeltaTime;
+        /* some code */
+    }
+}
+```
+我们注意到，两种实现方式最大的不同就是程序员是否需要在每次Update的时候显式操控物体。使用物理力的Rigidbody会在程度上降低程序员的编程难度，但这也是以增加系统开销为代价的（对Rigidbody的计算）
+
+# Adaptor模式
+Adaptor模式应用的典型情景是有一个现成的类（例如，引入一个其他人写好的类，或在现成的项目中已经写好的类），我们不想修改这个类的源代码（修改可能会引入一些意料之外的Bug），但是已有的类不适合所需要应用的接口。此时我们就需要使用Adaptor模式。
+一般情况下，Adaptor模式更多是一种临时的方案，过度地使用会增加代码的复杂程度，增加维护的难度。在时间充足，测试完全的情况下，重构代码才是更好的选择。
+我们不打算在UFO hit项目里使用Adaptor模式，不过我们举一个项目中的例子来说明这个模式的应用。
+## 例子
+在旧的代码版本中，UFO被定义为一个接口：
+```C#
+public interface UFO {
+	int Score {get; set;}
+	GameObject gameobject { get; set; }
+	void hide();
+	void show();
+	bool canHit { get; set; }
+}
+```
+
+
+# 其他更新
+
+## 泛型工厂类
+在游戏的旧版本中，我们只有一个UFO的工厂Factory_UFO，代码如下
+```C#
+public class Factory_UFO {
+    private Dictionary<int, UFO> UFO_available;
+    private Dictionary<int, UFO> UFO_store;
+    private List<int> idList;
+    private Factory_UFO() {
+
+    }
+    static private Factory_UFO _instance;
+    static public Factory_UFO getInstance() {
+        if (_instance == null) {
+            _instance = new Factory_UFO();
+            _instance.UFO_available = new Dictionary<int, UFO>();
+            _instance.UFO_store = new Dictionary<int, UFO>();
+            _instance.idList = new List<int>();
+        }
+        return _instance;
+    }
+
+    public UFO getUFOInstance() {
+        if (idList.Count == 0) {
+            UFO newUFO;
+            switch (Random.Range(0, 3)) {
+                case 0:
+                    newUFO = new UFO_Red();
+                    break;
+                case 1:
+                    newUFO = new UFO_Green();
+                    break;
+                default:
+                    newUFO = new UFO_Blue();
+                    break;
+            }
+            newUFO.hide();
+            UFO_store.Add(newUFO.gameobject.GetInstanceID(), newUFO);
+            return newUFO;
+        } else {
+            int id = idList[Random.Range(0, idList.Count)];
+            UFO product = UFO_available[id];
+            product.hide();
+            UFO_available.Remove(id);
+            idList.Remove(id);
+            return product;
+        }
+    }
+
+    public UFO getUFOInstance(int id) {
+        return UFO_store[id];
+    }
+
+    public void Recovery(UFO ufo) {
+        int id = ufo.gameobject.GetInstanceID();
+        UFO_available.Add(id, ufo);
+        idList.Add(id);
+        ufo.hide();
+    }
+}
+```
+若此时我们需要引入箭矢的工厂Factory_Arrow，可以想象，Factory_Arrow除了随机生成不同类型的飞碟部分与单例模式的getInstance之外，其他部分都是相同的，这启发我们需要构造一个抽象类Factory
+```C#
+public class Factory<T> where T : Product
+{
+    private Dictionary<int, T> productAvailable;
+    private Dictionary<int, T> productStore;
+    private List<int> idList;
+    protected Factory() {
+        _instance = this;
+        _instance.productAvailable = new Dictionary<int, T>();
+        _instance.productStore = new Dictionary<int, T>();
+        _instance.idList = new List<int>();
+    }
+    static protected Factory<T> _instance;
+    static public Factory<T> getInstance() {
+        if (_instance == null) {
+            _instance = new Factory<T>();
+        }
+        return _instance;
+    }
+    public T getProduct() {
+        T product;
+        if (idList.Count == 0) {
+            product = generateProduct();
+            productStore.Add(product.gameobject.GetInstanceID(), product);
+        } else {
+            int id = idList[Random.Range(0, idList.Count)];
+            product = productAvailable[id];
+            productAvailable.Remove(id);
+            idList.Remove(id);
+        }
+        product.gameobject.SetActive(false);
+        product.gameobject.transform.rotation = Quaternion.identity;
+        product.gameobject.transform.position = Vector3.zero;
+        return product;
+    }
+    protected virtual T generateProduct() {
+        throw new System.NotImplementedException();
+    }
+
+    public T getProduct(int id) {
+        T product = productStore[id];
+        if(product != null) {
+            return product;
+        } else {
+            throw new System.MethodAccessException();
+        }
+    }
+
+    public void recycle(T ufo) {
+        int id = ufo.gameobject.GetInstanceID();
+        productAvailable.Add(id, ufo);
+        idList.Add(id);
+        ufo.recycle();
+    }
+}
+```
+当需要某种产品的工厂时，需要把模板参数T换成需要的函数，然后把虚函数generateProduct()重载为需要的方法。这样，当我们需要创建新的工厂的时候，工作量将大大减轻。
+如以前的UFO工厂将会变为：
+```C#
+public class Factory_UFO : Factory<UFO> {
+    new
+    static public Factory_UFO getInstance() {
+        if (_instance == null) {
+            _instance = new Factory_UFO();
+        }
+        return _instance as Factory_UFO;
+    }
+    override
+    protected UFO generateProduct() {
+        UFO newUFO;
+        switch (Random.Range(0, 3)) {
+            case 0:
+                newUFO = new UFO_Red();
+                break;
+            case 1:
+                newUFO = new UFO_Green();
+                break;
+            default:
+                newUFO = new UFO_Blue();
+                break;
+        }
+        return newUFO;
+    }
+}
+```
+而新增的Arrow工厂代码为：
+```C#
+public class Factory_Arrow : Factory<Arrow> {
+    new
+    static public Factory_Arrow getInstance() {
+        if (_instance == null) {
+            _instance = new Factory_Arrow();
+        }
+        return _instance as Factory_Arrow;
+    }
+    override
+    protected Arrow generateProduct() {
+        return new Arrow();
+    }
+}
+```
+显然，增加新工厂将不会是一件困难的事，代码也是相当简单的。
+
+[项目位置](https://github.com/MrFive5555/unity3D-UFO-hit)
