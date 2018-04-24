@@ -278,4 +278,6 @@ public class Factory_Arrow : Factory<Arrow> {
 ```
 显然，增加新工厂将不会是一件困难的事，代码也是相当简单的。
 
+# 链接
 [项目位置](https://github.com/MrFive5555/unity3D-UFO-hit)
+[视频链接](http://v.youku.com/v_show/id_XMzU2MjYyMzQ4NA==.html?spm=a2h3j.8428770.3416059.1)
