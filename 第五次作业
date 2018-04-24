@@ -87,7 +87,30 @@ public interface UFO {
 	bool canHit { get; set; }
 }
 ```
+但在新版本中，需要被工厂类生产的UFO需要时Product接口的一个实现（新的工厂类见下面一节）
+```C#
+public interface Product {
+    GameObject gameobject { get; set; }
+    void recycle();
+}
+```
 
+我们使用Adaptor模式适配一下该类
+```C#
+public class UFO_Adaptor : Product {
+    public GameObject gameobject { get; set; }
+    UFO ufo;
+    UFO_Adaptor () {
+        ufo = new UFO_Red(); // UFO_Red是UFO接口已实现的一个类
+        gameobject = ufo.gameobject;
+    }
+    public void recycle() {
+        ufo.hide();
+        // recycle是一个回收对象时需要用到的函数，事实上只需要要把飞碟隐藏起来。
+    }
+}
+```
+这样就可以把旧的类适配，让新的工厂模式生产了
 
 # 其他更新
 
